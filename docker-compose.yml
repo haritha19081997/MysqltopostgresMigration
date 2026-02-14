@@ -1,0 +1,57 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: poc-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: pocdb
+      MYSQL_USER: pocuser
+      MYSQL_PASSWORD: pocpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  postgres:
+    image: postgres:16
+    container_name: poc-postgres
+    environment:
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: pocdb
+      POSTGRES_USER: pguser
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  jupyter:
+    image: jupyter/all-spark-notebook:python-3.11
+    container_name: poc-jupyter
+
+    ports:
+      - "8888:8888"
+      - "4040:4040"
+      - "4041:4041"
+      - "4042:4042"
+      - "4043:4043"
+      - "4044:4044"
+
+    volumes:
+      - ./jars:/home/jovyan/jars
+      - ./notebooks:/home/jovyan/work
+
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+      MYSQL_USER: pocuser
+      MYSQL_PASSWORD: pocpass
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      SPARK_CLASSPATH: "/home/jovyan/jars/mysql-connector-j.jar:/home/jovyan/jars/postgresql.jar"
+
+    depends_on:
+      - mysql
+      - postgres
+
+volumes:
+  mysql_data:
+  pg_data:
